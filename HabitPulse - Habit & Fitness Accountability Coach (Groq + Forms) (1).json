@@ -1,0 +1,423 @@
+{
+  "name": "HabitPulse - Habit & Fitness Accountability Coach (Groq + Forms)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HabitPulse (n8n + Groq)\n1. Create a Groq credential (free key from console.groq.com/keys) and select it on 'Groq Chat Model'.\n2. Activate the workflow (toggle top-right).\n3. Open 'HabitPulse Check-in Form' > Production URL and fill the form.\n\nSimple Memory remembers each user (by name) while n8n is running. It resets when n8n restarts.",
+        "height": 244,
+        "width": 484,
+        "color": 4
+      },
+      "id": "6480fdf2-0730-4691-80dd-fd4c9831df18",
+      "name": "Setup Notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "HabitPulse Daily Check-in",
+        "formDescription": "Log your habit and fitness progress. Your AI accountability coach will reply with supportive, personalised feedback.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Your Name",
+              "placeholder": "e.g. Anjali",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Habit Name",
+              "placeholder": "e.g. Morning walk",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Habit Status Today",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Done"
+                  },
+                  {
+                    "option": "Partially Done"
+                  },
+                  {
+                    "option": "Missed"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Current Streak (days)",
+              "fieldType": "number",
+              "placeholder": "e.g. 7",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Days Missed in a Row",
+              "fieldType": "number",
+              "placeholder": "0 if none",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Workout Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "None"
+                  },
+                  {
+                    "option": "Walking"
+                  },
+                  {
+                    "option": "Running"
+                  },
+                  {
+                    "option": "Strength"
+                  },
+                  {
+                    "option": "Yoga"
+                  },
+                  {
+                    "option": "Cycling"
+                  },
+                  {
+                    "option": "HIIT"
+                  },
+                  {
+                    "option": "Other"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Workout Duration (min)",
+              "fieldType": "number",
+              "placeholder": "e.g. 30"
+            },
+            {
+              "fieldLabel": "Workout Intensity",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Low"
+                  },
+                  {
+                    "option": "Medium"
+                  },
+                  {
+                    "option": "High"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Recent High-Intensity Workouts in a Row",
+              "fieldType": "number",
+              "placeholder": "e.g. 0"
+            },
+            {
+              "fieldLabel": "Steps Today",
+              "fieldType": "number",
+              "placeholder": "e.g. 8000"
+            },
+            {
+              "fieldLabel": "Water (ml)",
+              "fieldType": "number",
+              "placeholder": "e.g. 2000"
+            },
+            {
+              "fieldLabel": "Sleep (hours)",
+              "fieldType": "number",
+              "placeholder": "e.g. 7"
+            },
+            {
+              "fieldLabel": "Mood",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Great"
+                  },
+                  {
+                    "option": "Good"
+                  },
+                  {
+                    "option": "Okay"
+                  },
+                  {
+                    "option": "Low"
+                  },
+                  {
+                    "option": "Stressed"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Goal Title",
+              "placeholder": "e.g. Walk 100 km this month"
+            },
+            {
+              "fieldLabel": "Goal Progress (%)",
+              "fieldType": "number",
+              "placeholder": "0 to 100"
+            },
+            {
+              "fieldLabel": "Notes",
+              "fieldType": "textarea",
+              "placeholder": "Anything you want your coach to know"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Get my coaching"
+        }
+      },
+      "id": "6a3e2081-37ac-45bb-a427-70a5408efde3",
+      "name": "HabitPulse Check-in Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -208,
+        48
+      ],
+      "webhookId": "1fe5d736-54f2-4463-8e53-66a1b9c97c17"
+    },
+    {
+      "parameters": {
+        "jsCode": "const f = $input.first().json;\nconst num = (v, d = 0) => { const n = Number(v); return Number.isFinite(n) ? n : d; };\n\nconst name   = String(f['Your Name'] || 'Friend').trim();\nconst habit  = String(f['Habit Name'] || 'your habit').trim();\nconst status = f['Habit Status Today'] || 'Done';\nconst streak = num(f['Current Streak (days)']);\nconst missed = num(f['Days Missed in a Row']);\nconst wType  = f['Workout Type'] || 'None';\nconst wMin   = num(f['Workout Duration (min)']);\nconst wInt   = f['Workout Intensity'] || 'Low';\nconst hiRun  = num(f['Recent High-Intensity Workouts in a Row']);\nconst steps  = num(f['Steps Today']);\nconst water  = num(f['Water (ml)']);\nconst sleep  = num(f['Sleep (hours)']);\nconst mood   = f['Mood'] || 'Okay';\nconst goal   = String(f['Goal Title'] || '').trim();\nconst goalPct = num(f['Goal Progress (%)']);\nconst notes  = String(f['Notes'] || '').trim();\n\n// ---- Validation (TC-08: negative values rejected) ----\nconst errors = [];\nif (wMin < 0) errors.push('Workout duration cannot be negative.');\nif (steps < 0) errors.push('Steps cannot be negative.');\nif (water < 0) errors.push('Water intake cannot be negative.');\nif (sleep < 0 || sleep > 24) errors.push('Sleep hours must be between 0 and 24.');\nif (goalPct < 0 || goalPct > 100) errors.push('Goal progress must be between 0 and 100.');\nif (streak < 0 || missed < 0) errors.push('Streak and missed days cannot be negative.');\n\n// ---- Rule-based coaching layer (from HabitPulse section 10) ----\nlet ruleMessage, ruleTag;\nif (missed >= 3) {\n  ruleTag = 'Restart small';\n  ruleMessage = \"It's been a few days, and that's okay. Let's restart small: try just 5 minutes of \" + habit + \" today.\";\n} else if (missed >= 1 || status === 'Missed') {\n  ruleTag = 'Gentle reminder';\n  ruleMessage = 'You missed a day. No problem. Get back on track today with a small step on ' + habit + '.';\n} else if (streak > 0 && streak % 7 === 0) {\n  ruleTag = 'Milestone';\n  ruleMessage = streak + '-day streak! Fantastic consistency.';\n} else if (status === 'Partially Done') {\n  ruleTag = 'Progress counts';\n  ruleMessage = 'Partial effort still counts. Showing up matters more than perfection.';\n} else {\n  ruleTag = 'Momentum';\n  ruleMessage = 'Nice work today. Keep the momentum going.';\n}\n\nconst extras = [];\nif (hiRun >= 3) extras.push('Rest day suggested: you have done several high-intensity workouts in a row.');\nif (goal && goalPct >= 100) extras.push('Goal complete: \"' + goal + '\" is at 100%. Celebrate this win!');\nelse if (goal && goalPct >= 50) extras.push('Halfway there: \"' + goal + '\" is past 50%.');\nif (sleep > 0 && sleep < 6) extras.push('Short on sleep? Aim for a little more rest tonight.');\n\nconst sessionId = name.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'user';\n\nconst prompt = 'Daily check-in from ' + name + ':\\n'\n  + '- Habit: ' + habit + ' | Status today: ' + status + '\\n'\n  + '- Current streak: ' + streak + ' days | Days missed in a row: ' + missed + '\\n'\n  + '- Workout: ' + wType + ', ' + wMin + ' min, intensity ' + wInt + ' | High-intensity workouts in a row: ' + hiRun + '\\n'\n  + '- Steps: ' + steps + ' | Water: ' + water + ' ml | Sleep: ' + sleep + ' h | Mood: ' + mood + '\\n'\n  + '- Goal: ' + (goal || 'none set') + ' (' + goalPct + '% complete)\\n'\n  + '- Notes: ' + (notes || 'none') + '\\n'\n  + '- Rule engine says: [' + ruleTag + '] ' + ruleMessage + ' ' + extras.join(' ');\n\nreturn [{ json: {\n  valid: errors.length === 0, errors,\n  name, habit, status, streak, missed, wType, wMin, wInt, hiRun,\n  steps, water, sleep, mood, goal, goalPct, notes,\n  ruleMessage, ruleTag, extras, sessionId, prompt\n}}];"
+      },
+      "id": "663937cb-c5c8-4588-8eb6-c6e659b9debc",
+      "name": "Rule-Based Coach",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1000000-0000-4000-8000-000000000001",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "621f80b2-ff54-41bb-bd1e-119460aa409e",
+      "name": "Input Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "You are HabitPulse, a warm, supportive personal habit and fitness accountability coach. Rules: be encouraging and never shame the user. Give general wellness guidance only, never medical advice, diagnosis, calorie-restriction or extreme-diet advice. If the user missed 3 or more days, suggest a much smaller version of the habit. If the rule engine suggests a rest day, recommend rest. Use earlier check-ins from this conversation (memory) to mention trends such as improving streaks, repeated misses, or better sleep, but only if earlier check-ins exist. Reply in plain text with no markdown, no asterisks and no emojis, in exactly these three lines, under 110 words in total:\nCoach Message: <2 or 3 supportive sentences>\nToday's Tiny Action: <one specific action under 10 minutes>\nTrend Note: <one sentence about the trend, or say this is your first check-in>"
+        }
+      },
+      "id": "be1eb97e-7d81-4aae-8a57-6fba75392586",
+      "name": "HabitPulse AI Coach",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        496,
+        -48
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": "qwen/qwen3.8-27b",
+        "options": {
+          "maxTokensToSample": 400,
+          "temperature": 0.6
+        }
+      },
+      "id": "3beeccfa-e8eb-4093-bceb-8fffd94d950c",
+      "name": "Groq Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        416,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Rule-Based Coach').first().json.sessionId }}",
+        "contextWindowLength": 6
+      },
+      "id": "216e2655-5bcc-424e-86c2-efcf9502e501",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = $('Rule-Based Coach').first().json;\nconst esc = s => String(s === undefined || s === null ? '' : s)\n  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n\nconst wrap = inner => '<div style=\"font-family:Segoe UI,Arial,sans-serif;max-width:640px;margin:auto;text-align:left;color:#1f2937;\">' + inner + '</div>';\n\n// ---- Invalid input branch ----\nif (!b.valid) {\n  const items = b.errors.map(e => '<li>' + esc(e) + '</li>').join('');\n  return [{ json: { html: wrap(\n    '<div style=\"background:#fef2f2;border-left:5px solid #dc2626;padding:14px;border-radius:8px;\">'\n    + '<b>Please fix your check-in and submit again:</b><ul>' + items + '</ul></div>'\n  )}}];\n}\n\n// ---- Coaching text: AI output with rule-based fallback ----\nlet ai = String($json.output || '').replace(/\\*\\*/g, '').trim();\nlet source = 'Groq AI coach + HabitPulse rule engine (with memory)';\nif (!ai) { ai = 'Coach Message: ' + b.ruleMessage; source = 'Rule-based fallback (AI unavailable)'; }\n\nconst aiHtml = ai.split('\\n').filter(l => l.trim()).map(l => {\n  const m = l.match(/^(Coach Message|Today's Tiny Action|Trend Note)\\s*:\\s*(.*)$/i);\n  return m ? '<p style=\"margin:10px 0;\"><b style=\"color:#4f46e5;\">' + esc(m[1]) + ':</b> ' + esc(m[2]) + '</p>'\n           : '<p style=\"margin:10px 0;\">' + esc(l) + '</p>';\n}).join('');\n\nconst chip = (label, value) =>\n  '<div style=\"flex:1 1 140px;background:#f3f4f6;border-radius:10px;padding:10px;\">'\n  + '<div style=\"font-size:12px;color:#6b7280;\">' + label + '</div>'\n  + '<div style=\"font-size:18px;font-weight:600;\">' + esc(value) + '</div></div>';\n\nconst extrasHtml = b.extras.length\n  ? '<div style=\"background:#fffbeb;border-left:5px solid #f59e0b;padding:12px;border-radius:8px;margin:14px 0;\">'\n    + b.extras.map(e => '<div>&#9889; ' + esc(e) + '</div>').join('') + '</div>'\n  : '';\n\nconst goalBar = b.goal\n  ? '<div style=\"margin:14px 0;\"><div style=\"font-size:13px;\">Goal: <b>' + esc(b.goal) + '</b> (' + b.goalPct + '%)</div>'\n    + '<div style=\"background:#e5e7eb;border-radius:8px;height:12px;overflow:hidden;\">'\n    + '<div style=\"width:' + Math.min(100, b.goalPct) + '%;background:#10b981;height:12px;\"></div></div></div>'\n  : '';\n\nconst html = wrap(\n  '<h2 style=\"margin:0 0 4px;\">Hi ' + esc(b.name) + '! &#127939;</h2>'\n  + '<div style=\"display:inline-block;background:#4f46e5;color:#fff;padding:3px 12px;border-radius:20px;font-size:13px;\">' + esc(b.ruleTag) + '</div>'\n  + '<div style=\"display:flex;flex-wrap:wrap;gap:10px;margin:16px 0;\">'\n  + chip('Habit', b.habit + ' (' + b.status + ')')\n  + chip('Streak', b.streak + ' days')\n  + chip('Days missed', b.missed)\n  + chip('Workout', b.wType + ' ' + b.wMin + ' min')\n  + chip('Steps', b.steps)\n  + chip('Water', b.water + ' ml')\n  + chip('Sleep', b.sleep + ' h')\n  + chip('Mood', b.mood)\n  + '</div>'\n  + goalBar\n  + '<div style=\"background:#eef2ff;border-radius:10px;padding:14px;\">' + aiHtml + '</div>'\n  + extrasHtml\n  + '<p style=\"font-size:12px;color:#6b7280;margin-top:16px;\">Source: ' + esc(source) + '<br>'\n  + 'HabitPulse gives general wellness guidance only, not medical advice. Please consult a professional for health concerns.</p>'\n  + '<p style=\"font-size:13px;\">Want to check in again? Reload this form page and submit a new check-in.</p>'\n);\n\nreturn [{ json: { html } }];"
+      },
+      "id": "3c1d1caf-7a8c-48de-9949-15b019c507b8",
+      "name": "Build HTML Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Your HabitPulse Coaching Report",
+        "completionMessage": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "71ad0aff-037b-4a38-b43f-7d4a837730fa",
+      "name": "Show Coaching Report",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        48
+      ],
+      "webhookId": "6f0b0058-13a0-48c0-b4b8-355f0cb1cfcb"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HabitPulse Check-in Form": {
+      "main": [
+        [
+          {
+            "node": "Rule-Based Coach",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rule-Based Coach": {
+      "main": [
+        [
+          {
+            "node": "Input Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Valid?": {
+      "main": [
+        [
+          {
+            "node": "HabitPulse AI Coach",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build HTML Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HabitPulse AI Coach": {
+      "main": [
+        [
+          {
+            "node": "Build HTML Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "HabitPulse AI Coach",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "HabitPulse AI Coach",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build HTML Report": {
+      "main": [
+        [
+          {
+            "node": "Show Coaching Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "69e6123f-e157-492c-8a12-a5a9f70db404",
+  "meta": {
+    "instanceId": "0c87f4d445f236a411d8c7171689edc9dbd7b333093907e0661096ad712a9b7b"
+  },
+  "nodeGroups": [],
+  "id": "bYzXzQmfvT74WzxZ",
+  "tags": []
+}
